@@ -4,8 +4,16 @@ import pandas as pd
 from sklearn.metrics import f1_score
 from sklearn.cluster import KMeans
 
-def pivot_raw_df(df):
-	pass
+
+def pivot_raw_df(df, metric):
+
+	df_pivot = pd.wide_to_long(df, stubnames='Interval_', i='House ID', j=metric).reset_index()
+	df_pivot.columns = ['House ID', 'Interval', metric]
+	df_pivot['Interval'] = pd.to_numeric(df_pivot['Interval'], downcast='integer')
+	df_pivot = df_pivot.sort_values(['House ID', 'Interval']).reset_index(drop=True)
+
+	return df_pivot
+
 
 def add_temp_dim(df):
 
