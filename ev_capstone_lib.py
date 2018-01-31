@@ -8,7 +8,20 @@ def pivot_raw_df(df):
 	pass
 
 def add_temp_dim(df):
-	pass
+
+	temp_dim_dict = {
+	"Day": np.tile(np.repeat(np.arange(1,61),48),1590),
+	"Hour": np.tile(np.tile(np.repeat(np.arange(1,25),2),60),1590),
+	"Half Hour": np.tile(np.tile(np.arange(1,49),60),1590)
+	}
+
+	temp_dim_df = pd.DataFrame.from_dict(temp_dim_dict)
+	df_tmp = pd.concat([df, temp_dim_df], axis=1)
+	df_tmp_cols = ['House ID','Day','Hour','Half Hour','Interval', 'kWh', 'Label']
+	df_tmp = df_tmp[df_tmp_cols] 
+
+	return df_tmp
+
 
 def fill_with_mean(df):
 
