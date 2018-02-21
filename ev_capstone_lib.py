@@ -17,18 +17,24 @@ def pivot_raw_df(df, metric):
 
 def add_temp_dim(df):
 
+	length = len(df['House ID'].unique())
+
 	temp_dim_dict = {
-	"Day": np.tile(np.repeat(np.arange(1,61),48),1590),
-	"Hour": np.tile(np.tile(np.repeat(np.arange(1,25),2),60),1590),
-	"Half Hour": np.tile(np.tile(np.arange(1,49),60),1590)
+	"Day": np.tile(np.repeat(np.arange(1,61),48),length),
+	"Hour": np.tile(np.tile(np.repeat(np.arange(1,25),2),60),length),
+	"Half Hour": np.tile(np.tile(np.arange(1,49),60),length)
 	}
 
 	temp_dim_df = pd.DataFrame.from_dict(temp_dim_dict)
 	df_tmp = pd.concat([df, temp_dim_df], axis=1)
-	df_tmp_cols = ['House ID','Day','Hour','Half Hour','Interval', 'kWh', 'Label']
-	df_tmp = df_tmp[df_tmp_cols] 
 
-	return df_tmp
+	old_cols = df_tmp.columns.values.tolist()
+	col_order = ['House ID','Day','Hour','Half Hour','Interval', 'kWh', 'Label']
+
+	new_cols = [c for c in col_order if c in old_cols]
+	df_tmp_final = df_tmp[new_cols] 
+
+	return df_tmp_final
 
 
 def fill_with_mean(df):
@@ -43,17 +49,23 @@ def fill_with_mean(df):
 	# looping over missing values takes less memory
 	for idx, row in df[all_missing_rows].iterrows():
 
-		missing_interval = row['Interval']
-		missing_house = row['House ID']
-		missing_half_hour = row['Half Hour']
+		try:
+			missing_interval = row['Interval']
+			missing_house = row['House ID']
+			missing_half_hour = row['Half Hour']
 
-		house_rm = mean_df['House ID'] == missing_house
-		half_hour_rm = mean_df['Half Hour'] == missing_half_hour
-		house_half_hour_average = mean_df[house_rm&half_hour_rm]['kWh'].values[0]
+			house_rm = mean_df['House ID'] == missing_house
+			half_hour_rm = mean_df['Half Hour'] == missing_half_hour
 
-		house_rf = df_filled['House ID'] == missing_house
-		interval_rf = df_filled['Interval'] == missing_interval
-		df_filled['kWh'][house_rf&interval_rf] = house_half_hour_average
+			house_half_hour_average = mean_df[house_rm&half_hour_rm]['kWh'].values[0]
+
+			house_rf = df_filled['House ID'] == missing_house
+			interval_rf = df_filled['Interval'] == missing_interval
+			df_filled['kWh'][house_rf&interval_rf] = house_half_hour_average
+
+		except:
+			print(row)
+			break
 
 	return df_filled
 
