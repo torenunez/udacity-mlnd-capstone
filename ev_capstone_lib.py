@@ -70,7 +70,7 @@ def fill_with_mean(df):
 	return df_filled
 
 
-def house_agg_and_split(df):
+def house_agg_and_split(df, has_label=True):
 	
 	half_hours = np.arange(1,49)
 
@@ -89,18 +89,26 @@ def house_agg_and_split(df):
 	pct_cols = ['p_{}'.format(n) for n in half_hours]
 	df_described[pct_cols] = df_described[mean_cols].div(df_described[mean_cols].sum(axis=1),axis=0)
 
-	# create label at the house level and merge with house dataset to keep order
-	df_labels = df.groupby(['House ID']).agg({'Label':sum}).reset_index()
-	df_labels['House Label'] = [1 if x > 0 else 0 for x in df_labels['Label']]
-	df_labels.drop(['Label'], axis=1, inplace=True)
-	h_Xy = df_described.merge(df_labels, how='left', on='House ID')
+	if has_label:
+		# create label at the house level and merge with house dataset to keep order
+		df_labels = df.groupby(['House ID']).agg({'Label':sum}).reset_index()
+		df_labels['House Label'] = [1 if x > 0 else 0 for x in df_labels['Label']]
+		df_labels.drop(['Label'], axis=1, inplace=True)
+		h_Xy = df_described.merge(df_labels, how='left', on='House ID')
 
-	# split X and y
-	h_X = h_Xy.copy()
-	h_y = h_X['House Label']
-	h_X.drop(['House Label'], axis=1, inplace=True)
+		# split X and y
+		h_X = h_Xy.copy()
+		h_y = h_X['House Label']
+		h_X.drop(['House Label'], axis=1, inplace=True)
 
-	return h_X, h_y
+		return h_X, h_y
+
+	else:
+
+		h_X = df_described.copy()
+		
+		return h_X
+
 
 
 def cluster_retrieve_best_k(h_X, h_y, k_min=2, k_max=10):
@@ -151,16 +159,22 @@ def cluster_retrieve_best_k(h_X, h_y, k_min=2, k_max=10):
 	return h_X_with_cluster, cluster_centers_df, best_k_col_name
 
 
-def transform_house_subset_to_time(h_X, h_y, all_processed_df):
+def transform_house_subset_to_time(h_X, h_y, all_processed_df, has_label=True):
 
 	house_ids = h_X['House ID'][h_y>0].values
 	keep_records = all_processed_df['House ID'].isin(house_ids)
 	t_X = all_processed_df[keep_records]
 
-	t_y = t_X['Label']
-	t_X.drop(['Label'], axis=1, inplace=True)
+	if has_label:
 
-	return t_X, t_y
+		t_y = t_X['Label']
+		t_X.drop(['Label'], axis=1, inplace=True)
+		
+		return t_X, t_y
+
+	else:
+
+		return t_X
 
 
 def augment_time_data(t_X, h_X, centers_df, k_col='k_9', diff_days=7):
