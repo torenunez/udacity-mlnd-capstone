@@ -234,4 +234,21 @@ def format_ev_predictions(y, X, first_int=1, final_int=2880):
 	preds.columns = preds.columns.get_level_values(0)
 	preds.columns = ["Interval_{}".format(i) for i in np.arange(first_int, final_int+1).tolist()]
 
+	preds = preds.reset_index()
+
 	return preds
+
+
+def complete_time_predictions(raw, preds):
+
+	h_order_df = raw['House ID'].to_frame()
+
+	complete = h_order_df.merge(preds, how='left', on='House ID')
+
+	complete = complete.fillna(0)
+
+	int_cols = complete.columns.values.tolist()[1:]
+
+	complete[int_cols] = complete[int_cols].astype(int)
+
+	return complete
