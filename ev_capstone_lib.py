@@ -161,7 +161,7 @@ def cluster_retrieve_best_k(h_X, h_y, k_min=2, k_max=10):
 
 def transform_house_subset_to_time(h_X, h_y, all_processed_df, has_label=True):
 
-	house_ids = h_X['House ID'][h_y>0].values
+	house_ids = h_X['House ID'][h_y>0].values # TODO: change to complete subset house IDs and EV house IDs
 	keep_records = all_processed_df['House ID'].isin(house_ids)
 	t_X = all_processed_df[keep_records]
 
