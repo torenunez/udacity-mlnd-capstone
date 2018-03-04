@@ -224,6 +224,38 @@ def show_baseline_f1_scores(y):
 	print ("All 1 F-score: {0:.3f}".format(f1_score(y, one_one)))
 
 
+def get_all_relevant_preds_and_trues(t_X, t_y_pred, h_X, t_Xy):
+
+	relevant_house_ids = h_X['House ID'].to_frame()
+
+	predicted_house_ids = t_X.copy()
+	predicted_house_ids['Predicted Label'] = t_y_pred
+	predicted_house_ids = predicted_house_ids[['House ID', 'Interval','Predicted Label']]
+
+	all_relevant_t_Xy = relevant_house_ids.merge(t_Xy[['House ID', 'Interval']], how='left', on=['House ID'])
+	all_relevant_t_Xy = all_relevant_t_Xy.merge(predicted_house_ids, how='left', on=['House ID','Interval'])
+
+	if 'Label' in t_Xy:
+		all_relevant_t_Xy = all_relevant_t_Xy.merge(t_Xy[['House ID', 'Interval','Label']], how='left', on=['House ID','Interval'])
+		all_relevant_t_Xy.rename(columns={'Label': 'True Label'}, inplace=True)
+		all_t_y_true = all_relevant_t_Xy['True Label']
+	else:
+		all_t_y_true = None
+
+	all_relevant_t_Xy['Filled Label'] = all_relevant_t_Xy['Predicted Label'].fillna(0)
+	all_relevant_t_Xy['Filled Label'] = all_relevant_t_Xy['Filled Label'].astype(int)
+	all_t_y_pred = all_relevant_t_Xy['Filled Label']
+
+
+	print ("{} base predictions extended to {} total predictions, filled with zeros for non-EV houses.".format(
+		len(t_y_pred), 
+		len(all_t_y_pred)
+		)
+	)
+
+	return all_t_y_pred, all_t_y_true, all_relevant_t_Xy
+
+
 def format_ev_predictions(y, X, first_int=1, final_int=2880):
 
 	preds_long = X[['House ID', 'Interval']].copy()
@@ -238,17 +270,3 @@ def format_ev_predictions(y, X, first_int=1, final_int=2880):
 
 	return preds
 
-
-def complete_time_predictions(raw, preds):
-
-	h_order_df = raw['House ID'].to_frame()
-
-	complete = h_order_df.merge(preds, how='left', on='House ID')
-
-	complete = complete.fillna(0)
-
-	int_cols = complete.columns.values.tolist()[1:]
-
-	complete[int_cols] = complete[int_cols].astype(int)
-
-	return complete
