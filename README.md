@@ -1,11 +1,13 @@
-# udacity-mlnd-ev-capstone
-Capstone Project for the Udacity Machine Learning Nanodegree
-Salvador Joel Núñez Gastélum
-
+# udacity-mlnd-ev-capstone  
+  
+Capstone Project for the Udacity Machine Learning Nanodegree  
+  
+Salvador Joel Núñez Gastélum  
+  
 
 ## Project Overview
 
-This project applies data augmentation techniques and a combination of k-means clustering, KNN classifiers, and Gradient Boosted Decision Trees (GBDT) to predict the Electric Vehicle (EV) charging.
+This project applies data augmentation techniques and a combination of k-means clustering, KNN classifiers, and Gradient Boosted Decision Trees (GBDT) to predict whether there is an Electric Vehicle (EV) charging at a house during a specific time frame.
 
 
 ## Project Instructions
