@@ -137,8 +137,12 @@ def cluster_retrieve_best_k(h_X, h_y, k_min=2, k_max=10):
 		count_test = h_X_with_k.copy()
 		count_test['Label'] = h_y
 		count_test_percent = count_test.groupby(k_col_name)['Label'].sum()/count_test.groupby(k_col_name)['Label'].count()
-		k_percent = (max(count_test_percent) / min(count_test_percent))
+		max_pct  = max(count_test_percent)
+		min_pct = min(count_test_percent)
+		k_percent = max_pct/min_pct
 	    
+		print("k:{}, ratio:{:.3f}, max:{:.3f}, min:{:.3f}.".format(k, k_percent, max_pct, min_pct))		
+
 	 	# save k that maximizes ratio
 		if k_percent > max_k_percent:
 			max_k_percent = k_percent
